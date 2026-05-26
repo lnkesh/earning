@@ -1,19 +1,19 @@
 {
-  "name": "telegram-earning-bot",
-  "version": "1.0.0",
-  "description": "Full Telegram Mini App Bot with Ads, Spin, Referrals & Admin Panel",
+  "name": "cyberpunk-earning-bot",
+  "version": "2.0.0",
+  "description": "Complete Telegram Mini App Earning Bot with Cyberpunk Theme",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
     "dev": "nodemon bot.js"
   },
   "dependencies": {
-    "telegraf": "^4.12.2",
-    "mongoose": "^7.6.3",
+    "telegraf": "^4.16.3",
+    "mongoose": "^8.4.0",
     "express": "^4.18.2",
-    "node-cron": "^3.0.2"
+    "cors": "^2.8.5"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+  "engines": {
+    "node": ">=18.0.0"
   }
-  }
+}
