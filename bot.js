@@ -497,7 +497,7 @@ bot.hears('📺 Daily Ads', async (ctx) => {
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
-        [Markup.button.webapp('🎬 Watch Ads & Earn', `${CONFIG.GITHUB_PAGES_URL}?mode=ads&userId=${user.telegramId}`)],
+        [Markup.button.webApp('🎬 Watch Ads & Earn', `${CONFIG.GITHUB_PAGES_URL}?mode=ads&userId=${user.telegramId}`)],
         [Markup.button.callback('🔄 Refresh Status', 'refresh_ads')]
       ])
     }
@@ -513,7 +513,7 @@ bot.action('refresh_ads', async (ctx) => {
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
-        [Markup.button.webapp('🎬 Watch Ads', `${CONFIG.GITHUB_PAGES_URL}?mode=ads&userId=${user.telegramId}`)],
+        [Markup.button.webApp('🎬 Watch Ads', `${CONFIG.GITHUB_PAGES_URL}?mode=ads&userId=${user.telegramId}`)],
         [Markup.button.callback('🔄 Refresh', 'refresh_ads')]
       ])
     }
@@ -749,7 +749,7 @@ bot.hears('🎡 Daily Bonus', async (ctx) => {
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
-        [Markup.button.webapp('🎡 Spin the Wheel!', `${CONFIG.GITHUB_PAGES_URL}?mode=spin&userId=${user.telegramId}&spinMode=${spinMode}`)]
+        [Markup.button.webApp('🎡 Spin the Wheel!', `${CONFIG.GITHUB_PAGES_URL}?mode=spin&userId=${user.telegramId}&spinMode=${spinMode}`)]
       ])
     }
   );
@@ -786,7 +786,7 @@ bot.hears('🏆 Sunday Tournament', async (ctx) => {
 
   const keyboard = [];
   if (!user.hasUnlockedUnlimitedSunday && user.sundayAdsCount < 20) {
-    keyboard.push([Markup.button.webapp('📺 Watch Sunday Ads', `${CONFIG.GITHUB_PAGES_URL}?mode=tournament&userId=${user.telegramId}`)]);
+    keyboard.push([Markup.button.webApp('📺 Watch Sunday Ads', `${CONFIG.GITHUB_PAGES_URL}?mode=tournament&userId=${user.telegramId}`)]);
   }
   if (user.sundayAdsCount >= 20 && !user.hasUnlockedUnlimitedSunday) {
     keyboard.push([Markup.button.url('🔥 Unlock Unlimited Ads', CONFIG.SUNDAY_UNLOCK_CPAGRIP_URL)]);
