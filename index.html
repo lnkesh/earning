@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cyberpunk Earning Hub</title>
+    <style>
+        :root {
+            --bg: #0B0B1E;
+            --cyan: #00f3ff;
+            --green: #00ff66;
+            --red: #ff4d4d;
+            --purple: #b300ff;
+            --dark: #111133;
+            --card: #151530;
+            --text: #e0e0ff;
+            --glow-cyan: 0 0 20px rgba(0, 243, 255, 0.4);
+            --glow-green: 0 0 20px rgba(0, 255, 102, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(0, 243, 255, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(179, 0, 255, 0.06) 0%, transparent 60%);
+        }
+
+        /* Header */
+        .header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--cyan);
+            box-shadow: var(--glow-cyan);
+            background: rgba(11, 11, 30, 0.95);
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            color: var(--cyan);
+            text-shadow: 0 0 15px var(--cyan);
+            letter-spacing: 3px;
+        }
+        .header .subtitle {
+            font-size: 0.75rem;
+            color: var(--purple);
+            letter-spacing: 2px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .stat-item {
+            background: var(--card);
+            border: 1px solid var(--cyan);
+            border-radius: 12px;
+            padding: 12px 18px;
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 0 0 10px var(--green);
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--cyan);
+            letter-spacing: 1px;
+        }
+
+        /* Main Container */
+        .main-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px 15px 40px;
+            flex: 1;
+        }
+
+        /* Mode: Spin Wheel */
+        #spinMode {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #spinMode.active { display: flex; }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 10px auto;
+        }
+        canvas#spinCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow:
+                0 0 40px rgba(0, 243, 255, 0.3),
+                0 0 80px rgba(179, 0, 255, 0.2),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+            border: 3px solid var(--cyan);
+        }
+        .spin-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 30px solid var(--red);
+            filter: drop-shadow(0 0 8px var(--red));
+            z-index: 10;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 35px;
+            border: 2px solid var(--cyan);
+            background: transparent;
+            color: var(--cyan);
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .btn:hover {
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: var(--glow-cyan);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-green {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .btn-green:hover {
+            background: rgba(0, 255, 102, 0.1);
+            box-shadow: var(--glow-green);
+        }
+
+        /* Ads Mode */
+        #adsMode {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #adsMode.active { display: flex; }
+
+        .ad-container {
+            width: 100%;
+            min-height: 350px;
+            background: var(--card);
+            border: 2px dashed var(--cyan);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-placeholder {
+            text-align: center;
+            color: var(--cyan);
+            opacity: 0.7;
+        }
+        .ad-placeholder .icon {
+            font-size: 3rem;
+        }
+
+        /* Result Popup */
+        .result-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--dark);
+            border: 2px solid var(--green);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 0 60px rgba(0, 255, 102, 0.4);
+            min-width: 260px;
+        }
+        .result-popup.show { display: block; }
+        .result-popup .amount {
+            font-size: 3rem;
+            color: var(--green);
+            text-shadow: 0 0 20px var(--green);
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 99;
+        }
+        .overlay.show { display: block; }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--dark);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--green);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        /* Info text */
+        .info-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--cyan);
+            opacity: 0.8;
+        }
+        .info-text span {
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        /* Loading spinner */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 243, 255, 0.2);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin-loader 0.8s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin-loader {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error bar */
+        .error-msg {
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .wheel-container { width: 250px; height: 250px; }
+            .header h1 { font-size: 1.3rem; }
+            .btn { padding: 12px 25px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>⚡ CYBERPUNK HUB ⚡</h1>
+        <div class="subtitle">Earn • Spin • Compete</div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="coinDisplay">0</div>
+            <div class="stat-label">🪙 COINS</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="adDisplay">0</div>
+            <div class="stat-label">📺 ADS</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="streakDisplay">0</div>
+            <div class="stat-label">🔥 STREAK</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+
+        <!-- SPIN WHEEL MODE -->
+        <div id="spinMode">
+            <div class="wheel-container">
+                <div class="spin-pointer"></div>
+                <canvas id="spinCanvas" width="300" height="300"></canvas>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="streakProgress" style="width: 14%;"></div>
+            </div>
+            <div class="info-text" id="streakInfo">Streak: Day 1 of 7</div>
+            <button class="btn btn-green" id="spinButton" onclick="spinWheel()">🎰 SPIN NOW</button>
+            <div class="info-text" id="spinStatus"></div>
+            <div id="spinError" class="error-msg" style="display:none;"></div>
+        </div>
+
+        <!-- ADS MODE -->
+        <div id="adsMode">
+            <div class="info-text" id="adsInfo"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="adsProgress" style="width: 0%;"></div>
+            </div>
+            <div class="info-text" id="adsRemaining"></div>
+            <div class="ad-container" id="adContainer">
+                <div class="ad-placeholder">
+                    <div class="icon">📺</div>
+                    <p>Ad loads here...</p>
+                    <div class="loader" id="adLoader"></div>
+                </div>
+            </div>
+            <button class="btn" id="adCompleteBtn" onclick="adCompleted()" disabled>
+                ✅ I Watched The Ad
+            </button>
+            <div class="info-text" id="adStatus"></div>
+            <div id="adError" class="error-msg" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- RESULT POPUP -->
+    <div class="overlay" id="overlay"></div>
+    <div class="result-popup" id="resultPopup">
+        <div style="font-size:2rem;margin-bottom:10px;" id="resultEmoji">🎉</div>
+        <div class="amount" id="resultAmount">+50</div>
+        <div style="color:var(--cyan);margin:10px 0;" id="resultMsg">Coins Earned!</div>
+        <button class="btn btn-green" onclick="closePopup()" style="margin-top:15px;">🚀 CONTINUE</button>
+    </div>
+
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Monetag Ad Script -->
+    <script src="https://alwingulla.com/88/ed/3a/88ed3af23992b45e7f7889cb9c02cbba.js"></script>
+    <script>
+        // Monetag initialization
+        if (typeof show_11055841 === 'function') {
+            show_11055841({
+                type: 'inApp',
+                inAppSettings: {
+                    frequency: 2,
+                    capping: 0.1,
+                    interval: 30,
+                    timeout: 5,
+                    everyPage: false
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // ============ CONFIGURATION ============
+        const BACKEND_URL = 'https://YOUR_RENDER_APP_URL';
+        const CONFIG = {
+            backendUrl: BACKEND_URL,
+            isMega: false,
+            streak: 0,
+            userId: '',
+            mode: 'spin' // 'spin' or 'ads' or 'sunday'
+        };
+
+        // ============ INITIALIZATION ============
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        CONFIG.mode = urlParams.get('mode') || 'spin';
+        CONFIG.userId = urlParams.get('userId') || '';
+        CONFIG.isMega = urlParams.get('mega') === '1';
+        CONFIG.streak = parseInt(urlParams.get('streak') || '0');
+
+        // ============ SPIN WHEEL DATA ============
+        const normalSegments = [
+            { label: '10', value: 10, color: '#00f3ff' },
+            { label: '25', value: 25, color: '#b300ff' },
+            { label: '50', value: 50, color: '#ff4d4d' },
+            { label: '15', value: 15, color: '#00ff66' },
+            { label: '30', value: 30, color: '#ffaa00' },
+            { label: '75', value: 75, color: '#ff00aa' },
+            { label: '20', value: 20, color: '#00f3ff' },
+            { label: '40', value: 40, color: '#b300ff' },
+        ];
+
+        const megaSegments = [
+            { label: '50', value: 50, color: '#00f3ff' },
+            { label: '100', value: 100, color: '#ffaa00' },
+            { label: '200', value: 200, color: '#ff4d4d' },
+            { label: '75', value: 75, color: '#b300ff' },
+            { label: '150', value: 150, color: '#00ff66' },
+            { label: '500', value: 500, color: '#ff00aa' },
+            { label: '80', value: 80, color: '#00f3ff' },
+            { label: '250', value: 250, color: '#ffaa00' },
+        ];
+
+        let currentSegments = CONFIG.isMega ? megaSegments : normalSegments;
+        let isSpinning = false;
+        let currentRotation = 0;
+        let spinCanvas, spinCtx;
+
+        // ============ SETUP UI ============
+        function initializeUI() {
+            if (CONFIG.mode === 'spin') {
+                document.getElementById('spinMode').classList.add('active');
+                document.getElementById('adsMode').classList.remove('active');
+                setupSpinWheel();
+                updateStreakDisplay();
+            } else {
+                document.getElementById('spinMode').classList.remove('active');
+                document.getElementById('adsMode').classList.add('active');
+                setupAdsMode();
+            }
+
+            // Update stats
+            fetchUserStats();
+        }
+
+        // ============ SPIN WHEEL ============
+        function setupSpinWheel() {
+            spinCanvas = document.getElementById('spinCanvas');
+            spinCtx = spinCanvas.getContext('2d');
+            drawWheel(0);
+        }
+
+        function drawWheel(rotation) {
+            const canvas = spinCanvas;
+            const ctx = spinCtx;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
+            const segments = currentSegments;
+            const anglePerSegment = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw segments
+            segments.forEach((seg, i) => {
+                const startAngle = rotation + i * anglePerSegment;
+                const endAngle = startAngle + anglePerSegment;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+
+                // Gradient fill
+                const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                grad.addColorStop(0, seg.color);
+                grad.addColorStop(1, '#0B0B1E');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Border
+                ctx.strokeStyle = '#0B0B1E';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 18px "Courier New", monospace';
+                ctx.shadowColor = seg.color;
+                ctx.shadowBlur = 8;
+                ctx.fillText(seg.label, radius - 25, 7);
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            });
+
+            // Center circle
+            const centerGrad = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, 30);
+            centerGrad.addColorStop(0, '#ffffff');
+            centerGrad.addColorStop(1, '#0B0B1E');
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 28, 0, 2 * Math.PI);
+            ctx.fillStyle = centerGrad;
+            ctx.fill();
+            ctx.strokeStyle = '#00f3ff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Inner text
+            ctx.fillStyle = '#00f3ff';
+            ctx.font = 'bold 14px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('SPIN', centerX, centerY + 5);
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const spinBtn = document.getElementById('spinButton');
+            spinBtn.disabled = true;
+            spinBtn.textContent = '🌀 SPINNING...';
+            document.getElementById('spinError').style.display = 'none';
+
+            const segments = currentSegments;
+            const anglePerSegment = 360 / segments.length;
+
+            // Random target (at least 5 full rotations)
+            const targetIndex = Math.floor(Math.random() * segments.length);
+            const fullSpins = 5 + Math.floor(Math.random() * 3);
+            const targetAngle = fullSpins * 360 + targetIndex * anglePerSegment + anglePerSegment / 2;
+            const startRotation = currentRotation;
+            const totalRotation = targetAngle * (Math.PI / 180);
+
+            const duration = 4000 + Math.random() * 2000;
+            const startTime = performance.now();
+
+            function animate(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease out cubic
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const currentAngle = startRotation + totalRotation * eased;
+
+                drawWheel(currentAngle);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Spin complete
+                    currentRotation = currentAngle;
+                    const finalIndex = (segments.length - 1 - Math.floor(
+                        ((currentAngle % (2 * Math.PI)) / (2 * Math.PI)) * segments.length
+                    )) % segments.length;
+                    const winner = segments[finalIndex >= 0 ? finalIndex : finalIndex + segments.length];
+
+                    // Send result to backend
+                    submitSpinResult(winner.value, () => {
+                        showResultPopup(winner.value, CONFIG.isMega);
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = '🎰 SPIN NOW';
+                        isSpinning = false;
+                    }, () => {
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = '🎰 SPIN NOW';
+                        isSpinning = false;
+                        document.getElementById('spinError').style.display = 'block';
+                        document.getElementById('spinError').textContent = '❌ Failed to record spin. Try again.';
+                    });
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // ============ ADS MODE ============
+        function setupAdsMode() {
+            const remaining = parseInt(urlParams.get('remaining') || '10');
+            const total = CONFIG.mode === 'sunday' ? 20 : 10;
+            const current = total - remaining;
+
+            document.getElementById('adsInfo').textContent =
+                CONFIG.mode === 'sunday'
+                    ? '🏆 Sunday Tournament Ads'
+                    : '📺 Daily Ads (Mon-Sat)';
+
+            document.getElementById('adsRemaining').textContent =
+                `Remaining: ${remaining} | Earn 30-50 coins per ad`;
+
+            const progressPct = Math.min((current / total) * 100, 100);
+            document.getElementById('adsProgress').style.width = progressPct + '%';
+
+            // Enable the button after a short delay (simulating ad watch time)
+            const adBtn = document.getElementById('adCompleteBtn');
+            document.getElementById('adLoader').style.display = 'block';
+
+            // Simulate ad loading with Monetag
+            setTimeout(() => {
+                document.getElementById('adLoader').style.display = 'none';
+                document.querySelector('.ad-placeholder .icon').textContent = '📺';
+                document.querySelector('.ad-placeholder p').textContent =
+                    'Watch the advertisement above to earn coins!';
+                adBtn.disabled = false;
+                adBtn.style.animation = 'pulse 1.5s infinite';
+            }, 3000);
+        }
+
+        function adCompleted() {
+            const adBtn = document.getElementById('adCompleteBtn');
+            adBtn.disabled = true;
+            adBtn.textContent = '⏳ Processing...';
+            document.getElementById('adError').style.display = 'none';
+            document.getElementById('adStatus').textContent = '';
+
+            submitAdComplete((reward, data) => {
+                showResultPopup(reward, false);
+                adBtn.textContent = '✅ I Watched The Ad';
+                adBtn.disabled = false;
+                document.getElementById('adStatus').textContent =
+                    `✅ Earned ${reward} coins! Remaining: ${data.remaining}`;
+                document.getElementById('adDisplay').textContent = data.dailyAdsViewed || data.sundayAdsCount;
+            }, () => {
+                document.getElementById('adError').style.display = 'block';
+                document.getElementById('adError').textContent =
+                    '❌ Limit reached or error. Check back on the bot.';
+                adBtn.disabled = true;
+                adBtn.textContent = '🛑 Limit Reached';
+            });
+        }
+
+        // ============ API CALLS ============
+        function getInitData() {
+            return tg.initData || '';
+        }
+
+        async function submitSpinResult(coinsWon, onSuccess, onError) {
+            try {
+                const initData = getInitData();
+                const response = await fetch(`${CONFIG.backendUrl}/api/spin-result`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        initData,
+                        coinsWon,
+                        isMega: CONFIG.isMega
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('coinDisplay').textContent = data.totalCoins;
+                    document.getElementById('streakDisplay').textContent = data.streak;
+                    onSuccess();
+                } else {
+                    onError();
+                }
+            } catch (err) {
+                console.error('Spin submit error:', err);
+                onError();
+            }
+        }
+
+        async function submitAdComplete(onSuccess, onError) {
+            try {
+                const initData = getInitData();
+                const adType = CONFIG.mode === 'sunday' ? 'sunday' : 'daily';
+                const response = await fetch(`${CONFIG.backendUrl}/api/ad-complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ initData, adType })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('coinDisplay').textContent = data.totalCoins;
+                    onSuccess(data.reward, data);
+                } else {
+                    onError();
+                }
+            } catch (err) {
+                console.error('Ad submit error:', err);
+                onError();
+            }
+        }
+
+        async function fetchUserStats() {
+            try {
+                const initData = getInitData();
+                if (!initData) return;
+
+                const response = await fetch(`${CONFIG.backendUrl}/api/user-stats`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ initData })
+                });
+
+                const data = await response.json();
+                if (data.coins !== undefined) {
+                    document.getElementById('coinDisplay').textContent = data.coins;
+                    document.getElementById('adDisplay').textContent =
+                        CONFIG.mode === 'sunday' ? data.sundayAdsCount : data.dailyAdsViewed;
+                    document.getElementById('streakDisplay').textContent = data.spinStreak;
+                }
+            } catch (err) {
+                console.log('Stats fetch: using defaults');
+            }
+        }
+
+        // ============ UI HELPERS ============
+        function showResultPopup(amount, isMega) {
+            document.getElementById('resultAmount').textContent = '+' + amount;
+            document.getElementById('resultEmoji').textContent = isMega ? '🔥' : '🎉';
+            document.getElementById('resultMsg').textContent =
+                isMega ? 'MEGA SPIN COINS!' : 'Coins Earned!';
+            document.getElementById('resultPopup').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        function closePopup() {
+            document.getElementById('resultPopup').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+
+            // Close WebApp after viewing result
+            if (CONFIG.mode !== 'spin') {
+                // For ads, allow continuing
+            }
+            if (tg && tg.close) {
+                // Optionally close: tg.close();
+            }
+        }
+
+        function updateStreakDisplay() {
+            const streak = CONFIG.streak;
+            const progressPct = ((streak % 7) / 7) * 100 || 14;
+            document.getElementById('streakProgress').style.width = progressPct + '%';
+            document.getElementById('streakInfo').textContent =
+                `Streak: Day ${Math.min(streak + 1, 7)} of 7 ${CONFIG.isMega ? '🔥 MEGA SPIN!' : ''}`;
+            document.getElementById('streakDisplay').textContent = streak;
+        }
+
+        // ============ PULSE ANIMATION ============
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 0 5px rgba(0,255,102,0.3); }
+                50% { box-shadow: 0 0 25px rgba(0,255,102,0.7); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // ============ START ============
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUI();
+            console.log(`⚡ Cyberpunk Hub Initialized | Mode: ${CONFIG.mode} | User: ${CONFIG.userId}`);
+        });
+
+        // Handle Telegram theme
+        if (tg) {
+            tg.onEvent('themeChanged', () => {
+                console.log('Theme changed');
+            });
+        }
+    </script>
+</body>
+</html>
