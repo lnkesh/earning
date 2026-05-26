@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Earning Bot Mini App</title>
+  <style>
+    :root {
+      --bg: #0B0B1E;
+      --cyan: #00f3ff;
+      --green: #00ff66;
+      --red: #ff4d4d;
+      --card-bg: #151530;
+      --text: #e0e0e0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; padding: 20px;
+    }
+    h1 { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); margin-bottom:20px; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 15px rgba(0,243,255,0.3);
+      text-align: center;
+    }
+    button {
+      background: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 8px 0;
+      width: 100%;
+      max-width: 250px;
+    }
+    button:hover { background: #00d4e0; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .balance { font-size: 1.3em; margin: 10px 0; color: var(--green); }
+    .leaderboard { list-style: none; padding: 0; text-align: left; }
+    .leaderboard li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    canvas { display: block; margin: 0 auto; }
+    .ads-status { margin: 10px 0; }
+    .error { color: var(--red); }
+    .success { color: var(--green); }
+  </style>
+</head>
+<body>
+  <h1>⚡ Earning Bot</h1>
+
+  <div id="spinSection" class="card" style="display:none;">
+    <h2>🎡 Daily Spin</h2>
+    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    <p id="streakDisplay" class="balance"></p>
+    <button id="spinButton" onclick="spin()">SPIN</button>
+    <p id="spinResult"></p>
+  </div>
+
+  <div id="adsSection" class="card" style="display:none;">
+    <h2>📺 Watch Ad</h2>
+    <div id="adsInfo" class="ads-status"></div>
+    <button id="watchAdButton" onclick="watchAd()">▶️ Watch Ad & Earn</button>
+    <p id="adsResult"></p>
+  </div>
+
+  <div id="tournamentSection" class="card" style="display:none;">
+    <h2>🏆 Sunday Tournament</h2>
+    <p id="tournamentStatus"></p>
+    <ul id="leaderboard" class="leaderboard"></ul>
+    <button id="tournamentAdButton" onclick="watchAd()" style="margin-top:15px;">▶️ Watch Ad (Tournament)</button>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://alwingulla.com/88/ed/3a/88ed3af23992b45e7f7889cb9c02cbba.js"></script>
+  <script>
+    show_11055841({
+      type: 'inApp',
+      inAppSettings: {
+        frequency: 2,
+        capping: 0.1,
+        interval: 30,
+        timeout: 5,
+        everyPage: false
+      }
+    });
+  </script>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // ⚠️ REPLACE WITH YOUR ACTUAL BACKEND URL
+    const backendUrl = 'https://YOUR_RENDER_APP_URL';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode') || 'spin';
+
+    if (mode === 'spin') document.getElementById('spinSection').style.display = 'block';
+    else if (mode === 'ads') document.getElementById('adsSection').style.display = 'block';
+    else if (mode === 'tournament') document.getElementById('tournamentSection').style.display = 'block';
+
+    const initData = tg.initData || '';
+
+    // ---------- SPIN WHEEL ----------
+    if (mode === 'spin') {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const segments = ['10', '20', '30', '40', '50'];
+      const colors = ['#ff4d4d', '#00ff66', '#00f3ff', '#ffaa00', '#ff00aa'];
+      let spinning = false;
+
+      function drawWheel() {
+        const angle = (2 * Math.PI) / segments.length;
+        for (let i = 0; i < segments.length; i++) {
+          ctx.beginPath();
+          ctx.moveTo(150, 150);
+          ctx.arc(150, 150, 140, i * angle, (i + 1) * angle);
+          ctx.fillStyle = colors[i];
+          ctx.fill();
+          ctx.save();
+          ctx.translate(150, 150);
+          ctx.rotate(i * angle + angle / 2);
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 16px Arial";
+          ctx.fillText(segments[i], 100, 10);
+          ctx.restore();
+        }
+        ctx.beginPath();
+        ctx.arc(150, 150, 20, 0, 2 * Math.PI);
+        ctx.fillStyle = "#0B0B1E";
+        ctx.fill();
+      }
+      drawWheel();
+
+      async function spin() {
+        if (spinning) return;
+        spinning = true;
+        document.getElementById('spinButton').disabled = true;
+        document.getElementById('spinResult').innerText = 'Spinning...';
+
+        try {
+          const res = await fetch(`${backendUrl}/api/spin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initData })
+          });
+          const data = await res.json();
+          if (data.error) {
+            document.getElementById('spinResult').innerText = data.error;
+            document.getElementById('spinButton').disabled = false;
+            spinning = false;
+            return;
+          }
+          let deg = 0;
+          const spinInterval = setInterval(() => {
+            deg += 10;
+            canvas.style.transform = `rotate(${deg}deg)`;
+          }, 20);
+          setTimeout(() => {
+            clearInterval(spinInterval);
+            canvas.style.transform = `rotate(${deg}deg)`;
+            document.getElementById('spinResult').innerText = `🎉 You won ${data.reward} coins!${data.isMega ? ' MEGA SPIN!' : ''}`;
+            document.getElementById('streakDisplay').innerText = `🔥 Streak: ${data.streak} day(s)`;
+            spinning = false;
+          }, 2000);
+        } catch (e) {
+          document.getElementById('spinResult').innerText = 'Network error.';
+          spinning = false;
+          document.getElementById('spinButton').disabled = false;
+        }
+      }
+      window.spin = spin;
+    }
+
+    // ---------- ADS COMPLETION ----------
+    async function watchAd() {
+      const btn = document.getElementById('watchAdButton') || document.getElementById('tournamentAdButton');
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch(`${backendUrl}/api/completeAds`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ initData })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const resultElem = document.getElementById('adsResult');
+          if (resultElem) resultElem.innerText = `✅ Earned ${data.reward} coins!`;
+          const infoElem = document.getElementById('adsInfo');
+          if (infoElem) infoElem.innerText = `Ads watched today: ${data.adsViewed}`;
+        } else {
+          const resultElem = document.getElementById('adsResult');
+          if (resultElem) resultElem.innerText = data.error || 'Failed.';
+          if (btn) btn.disabled = false;
+        }
+      } catch (e) {
+        const resultElem = document.getElementById('adsResult');
+        if (resultElem) resultElem.innerText = 'Error connecting to server.';
+        if (btn) btn.disabled = false;
+      }
+    }
+    window.watchAd = watchAd;
+
+    // ---------- TOURNAMENT LEADERBOARD ----------
+    if (mode === 'tournament') {
+      async function loadLeaderboard() {
+        try {
+          const res = await fetch(`${backendUrl}/api/tournament`);
+          const data = await res.json();
+          if (!data.active) {
+            document.getElementById('tournamentStatus').innerText = 'Tournament is only active on Sundays.';
+            return;
+          }
+          document.getElementById('tournamentStatus').innerText = '🔥 Live Leaderboard (ads watched)';
+          const lb = document.getElementById('leaderboard');
+          lb.innerHTML = '';
+          if (data.leaderboard.length === 0) {
+            lb.innerHTML = '<li>No data yet. Watch ads to climb!</li>';
+            return;
+          }
+          data.leaderboard.forEach((entry, idx) => {
+            lb.innerHTML += `<li>${idx+1}. @${entry.username} – ${entry.sundayAdsCount} ads</li>`;
+          });
+        } catch (e) {
+          document.getElementById('tournamentStatus').innerText = 'Failed to load leaderboard.';
+        }
+      }
+      loadLeaderboard();
+      setInterval(loadLeaderboard, 30000);
+    }
+  </script>
+</body>
+</html>
