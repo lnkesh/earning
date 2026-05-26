@@ -15,8 +15,8 @@ const CONFIG = {
   MONETAG_SCRIPT_ID: "11055841",
   REDEEM_CPAGRIP_URL: "https://installyourfiles.com/1894012",
   SUNDAY_UNLOCK_CPAGRIP_URL: "https://installyourfiles.com/1894012",
-  CHANNEL_ID: "@YOUR_CHANNEL_USERNAME",   // 🔁 REPLACE with your channel username (e.g., "@myofficialchannel")
-  BACKEND_URL: "https://YOUR_RENDER_APP_URL" // 🔁 REPLACE with your deployed backend URL
+  CHANNEL_ID: "@earningbuddyoffcial",   // 🔁 REPLACE with your channel username (e.g., "@myofficialchannel")
+  BACKEND_URL:"https://earning-n0t3.onrender.com" // 🔁 REPLACE with your deployed backend URL
 };
 
 // ==================== DATABASE ====================
