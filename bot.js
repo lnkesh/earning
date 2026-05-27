@@ -16,7 +16,7 @@ const CONFIG = {
   MONGO_URI: 'mongodb+srv://lnkesh68:ankesh123@cluster0.gcabqgl.mongodb.net/telegramBot?retryWrites=true&w=majority',
   ADMIN_ID: '8949758794',
   GITHUB_PAGES_URL: 'https://lnkesh.github.io/earning',
-  MONETAG_SCRIPT_ID: '10959015',
+  MONETAG_SCRIPT_ID: '11055841',
   REDEEM_CPAGRIP_URL: 'https://installyourfiles.com/1894012',
   SUNDAY_UNLOCK_CPAGRIP_URL: 'https://installyourfiles.com/1894012',
   CHANNEL_ID: '@earningbuddyoffcial',
