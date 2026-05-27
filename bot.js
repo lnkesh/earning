@@ -12,7 +12,7 @@ const User = require('./models/User');
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
-  TELEGRAM_TOKEN: '8794330876:AAHOf4D6RPDyzn34ZqEajutnc2hxM4hIa1c',
+  TELEGRAM_TOKEN: '8794330876:AAGxZD8cNv8LL67Me1ODBHH6b0V_UkzbcCU',
   MONGO_URI: 'mongodb+srv://lnkesh68:ankesh123@cluster0.gcabqgl.mongodb.net/telegramBot?retryWrites=true&w=majority',
   ADMIN_ID: '8949758794',
   GITHUB_PAGES_URL: 'https://lnkesh.github.io/earning',
